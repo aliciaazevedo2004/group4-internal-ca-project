@@ -1,39 +1,36 @@
 # Security Testing Plan
 
-## Objective
-Verify that the internal Certificate Authority (CA) protects the group's internal wiki and API against unencrypted communication and server impersonation.
+## 1. Objective
+Verify that the internal Certificate Authority (CA) protects the internal wiki and API against unencrypted communication and server impersonation.
 
-## Lab Topology & Service Configuration
-All tests run against loopback addresses mapped to the agreed simulated domain `wiki.internal.local`.
+## 2. Lab Topology & Port Allocations
+All tests execute locally using loopback resolution mapped to the simulated internal domain `wiki.internal.local`.
 
-- **Local DNS Mapping (`/etc/hosts`):** `127.0.0.1 wiki.internal.local`
+- **DNS / Host Mapping (`/etc/hosts`):** `127.0.0.1 wiki.internal.local`
 - **Legitimate HTTP Wiki:** `http://wiki.internal.local:8080/`
 - **Fake HTTP Wiki:** `http://wiki.internal.local:8081/`
-- **Legitimate HTTPS Wiki:** `https://wiki.internal.local:8443/` (Validated by `ca/rootCA.crt`)
+- **Legitimate HTTPS Wiki:** `https://wiki.internal.local:8443/` (Secured via `ca/rootCA.crt`)
 - **Fake HTTPS Wiki:** `https://wiki.internal.local:9443/` (Untrusted / Self-signed certificate)
 
 ---
 
-## Test Cases
+## 3. Test Matrix
 
-| ID | Test Scenario | Command / Target | Expected Result | What It Demonstrates |
-|---|---|---|---|---|
-| **T1** | Connect to HTTP baseline | `curl -i http://wiki.internal.local:8080/` | HTTP 200 OK | Baseline service is reachable without TLS authentication. |
-| **T2** | Connect to fake HTTP service in isolated lab | `curl -i http://wiki.internal.local:8081/` | HTTP 200 OK | Plain HTTP cannot authenticate server identity or distinguish impostors. |
-| **T3** | Connect to legitimate HTTPS using team root CA | `curl --cacert ca/rootCA.crt https://wiki.internal.local:8443/` | HTTP 200 OK (Handshake success) | Trusted chain and valid hostname are accepted. |
-| **T4** | Connect to HTTPS using untrusted certificate | `curl --cacert ca/rootCA.crt https://wiki.internal.local:9443/` | Handshake failure (SSL error 60 / untrusted cert) | Client rejects certificates that do not chain to its trust anchor. |
-| **T5** | Connect using hostname not matching certificate SAN | `curl --cacert ca/rootCA.crt https://127.0.0.1:8443/` | Handshake failure (Hostname mismatch error) | Trust in a CA does not bypass hostname validation. |
-| **T6** | Connect to certificate signed by unrelated CA | `curl --cacert ca/rootCA.crt https://<UNRELATED_CA_SERVER>/` | Handshake failure (Unknown issuer) | Client trusts only the configured CA, not arbitrary issuers. |
+| Test ID | Scenario | Command / Target | Expected Result | What It Demonstrates |
+| :--- | :--- | :--- | :--- | :--- |
+| **T1** | HTTP client connects to legitimate wiki. | `curl -i http://wiki.internal.local:8080/` | HTTP 200 OK | Baseline service is reachable without TLS authentication. |
+| **T2** | HTTP client connects to fake wiki. | `curl -i http://wiki.internal.local:8081/` | HTTP 200 OK | HTTP itself does not authenticate the server identity. |
+| **T3** | Verified TLS client connects to legitimate wiki using `rootCA.crt`. | `curl -v --cacert ca/rootCA.crt https://wiki.internal.local:8443/` | Success (TLS handshake succeeds, HTTP 200) | Trusted chain and correct hostname are accepted. |
+| **T4** | Verified TLS client connects to fake server with an untrusted certificate. | `curl -v --cacert ca/rootCA.crt https://wiki.internal.local:9443/` | Handshake Failure (`SSL certificate problem: self signed certificate` / exit code 60) | Client rejects a certificate it cannot validate to its configured trust anchor. |
+| **T5** | Verified TLS client connects to a server certificate signed by internal CA but with wrong SAN. | `curl -v --cacert ca/rootCA.crt https://127.0.0.1:8443/` | Handshake Failure (Hostname mismatch) | Trust in a CA does not remove hostname verification. |
+| **T6** | Verified TLS client connects to a certificate signed by an unrelated CA. | `curl -v --cacert ca/rootCA.crt https://unrelated.internal.local:8443/` | Handshake Failure (Unknown issuer) | Client trusts the configured CA, not arbitrary issuers. |
 
 ---
 
-## Evidence Collection
-For each test, record in `docs/test-results.md`:
-- Test ID and timestamp
-- Setup and exact command executed
+## 4. Evidence Collection Standards
+For each executed test case, we recorded the following in `docs/test-results.md`:
+- Test ID and timestamp of execution
+- Complete command line invocation
 - Expected result vs. actual result
-- Pass/Fail status
-- Raw terminal transcript / verbose curl output
-
-## Security Notes
-Certificate verification must remain enabled across all tests. Never use `--insecure` or `-k` flags during validation tests. All testing is conducted exclusively within the authorized local lab environment.
+- PASS / FAIL status
+- Verbatim terminal output / handshake transcript
