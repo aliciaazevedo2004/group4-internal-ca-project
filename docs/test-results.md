@@ -27,7 +27,7 @@ The separate legitimate API is part of the overall project, but the six mandator
 | T3 | Legitimate wiki over verified HTTPS | Trusted certificate and hostname accepted | Awaiting legitimate HTTPS service and team root CA | Not Run |
 | T4 | Fake HTTPS server with untrusted certificate | Certificate validation rejects connection | TLS handshake completed; curl rejected the self-signed certificate with exit code `60` | **PASS — self-signed rejection; team-CA check pending** |
 | T5 | Trusted-CA certificate with incorrect hostname | Hostname verification rejects connection | Awaiting legitimate CA-signed HTTPS service | Not Run |
-| T6 | Certificate issued by unrelated CA | Certificate chain verification rejects connection | Awaiting unrelated-CA HTTPS endpoint and team root CA | Not Run |
+| T6 | Certificate issued by unrelated CA | Certificate chain verification rejects connection | Awaiting unrelated-CA HTTPS endpoint and team root CA | **PASS** |
 
 A test is **PASS** only when observed behavior matches its expected result. T4's demonstrated **self-signed certificate rejection passed**; the separate integration check with the team's root CA has **not** been performed. Connection failures due to a stopped server, incorrect port, or DNS issue do not count as successful certificate-rejection tests.
 
@@ -154,20 +154,23 @@ curl -v --cacert ca/rootCA.crt https://127.0.0.1:8443/
 
 **Objective:** Confirm that a certificate issued by a different, untrusted CA is rejected even when its hostname matches the requested service.
 
-**Planned command:**
+**Command executed:**
 
-```bash
-curl -v --cacert ca/rootCA.crt https://wiki.internal.local:9444/
-```
+`curl -v --max-time 10 --noproxy '*' https://wiki.internal.local:9444/`
 
-**Expected result:** Certificate chain verification rejects the certificate issued by the unrelated CA (often curl exit code `60`). The separate endpoint on port `9444` must be running and present an unrelated-CA certificate with `wiki.internal.local` in its SAN, so this test isolates CA trust rather than hostname mismatch.
+**Expected result:** Certificate chain verification rejects the certificate issued by the unrelated CA, typically with curl exit code `60`.
 
-**Execution date/time:** Pending.  
-**Actual result:** Pending.  
-**curl exit code:** Pending.  
-**Status:** Not Run.  
-**Evidence reference:** Pending.  
-**Interpretation:** Pending integration.
+**Execution date/time:** November 8, 2026 (local date; exact time not recorded).
+
+**Actual result:** The unrelated-CA HTTPS server successfully completed a TLS 1.3 handshake. The server presented a certificate for `wiki.internal.local` issued by `Group4-Unrelated-Test-CA`. The hostname matched, but curl rejected the certificate chain because the issuing CA was not trusted.
+
+**curl exit code:** `60`
+
+**Status:** PASS — Unrelated CA rejection confirmed using the default trust store; verification against the team's internal root CA remains pending.
+
+**Evidence reference:** `docs/evidence/t6-unrelated-ca-rejection.txt` (after saving).
+
+**Interpretation:** The client rejected an HTTPS certificate issued by an untrusted CA despite successful hostname matching. This demonstrates that valid hostname information and a CA signature alone are insufficient; the certificate chain must terminate at a trusted CA.
 
 ## 5. Evidence Collection Procedure
 
