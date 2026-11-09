@@ -2,3 +2,10 @@
 *.pem
 *.p12
 .env
+
+# Local lab private keys
+*.key
+
+# Python cache
+__pycache__/
+*.pyc

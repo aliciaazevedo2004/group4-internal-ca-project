@@ -1,0 +1,34 @@
+  % Total    % Received % Xferd  Average Speed  Time    Time    Time   Current
+                                 Dload  Upload  Total   Spent   Left   Speed
+
+  0      0   0      0   0      0      0      0                              0
+100    573 100    573   0      0 480.7k      0                              0
+100    573 100    573   0      0 423.9k      0                              0
+100    573 100    573   0      0 396.5k      0                              0
+HTTP/1.0 200 OK
+Server: BaseHTTP/0.6 Python/3.14.4
+Date: Sun, 08 Nov 2026 20:59:21 EST
+Content-Type: text/html; charset=utf-8
+Content-Length: 573
+
+
+        <!DOCTYPE html>
+        <html lang="en">
+        <head>
+            <meta charset="UTF-8">
+            <title>Internal Company Wiki</title>
+        </head>
+        <body>
+            <h1>Internal Company Wiki</h1>
+            <h2>Employee Knowledge Base</h2>
+
+            <p>Welcome to the internal company wiki.</p>
+            <p>Access internal documentation and resources here.</p>
+
+            <hr>
+
+            <p>LAB SIMULATION: FAKE HTTP WIKI</p>
+            <p>This endpoint represents an impersonating server.</p>
+        </body>
+        </html>
+        
