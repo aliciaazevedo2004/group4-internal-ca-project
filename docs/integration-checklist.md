@@ -40,10 +40,10 @@ This checklist will be used to verify that the Internal Certificate Authority pr
 
 5. Repository and Documentation
 
-- [ ] Main README includes setup and execution instructions.
-- [ ] Repository folders are organized and documented.
+- [X] Main README includes setup and execution instructions.
+- [X] Repository folders are organized and documented.
 - [ ] Required scripts and configuration files are included.
-- [ ] No private keys, passwords, or other secrets are committed.
+- [X] No private keys, passwords, or other secrets are committed.
 - [ ] Hostnames and ports match across documentation, certificates, services, and tests.
 - [ ] A clean checkout of the repository has been tested.
 - [ ] All required screenshots, logs, and test evidence are organized.
