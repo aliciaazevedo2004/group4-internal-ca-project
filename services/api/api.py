@@ -1,3 +1,4 @@
+import os
 from fastapi import APIRouter
 
 router = APIRouter(tags=["API"])
@@ -9,5 +10,5 @@ def get_health():
         "status": "healthy",
         "service": "internal-api",
         "version": "1.0",
-        "mode": "HTTP Baseline",
+        "mode": os.getenv("SERVICE_MODE", "http").upper(),,
     }
