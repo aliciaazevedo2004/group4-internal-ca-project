@@ -1,0 +1,20 @@
+  % Total    % Received % Xferd  Average Speed  Time    Time    Time   Current
+                                 Dload  Upload  Total   Spent   Left   Speed
+  0      0   0      0   0      0      0      0                              0100    415 100    415   0      0 119.1k      0                              0100    415 100    415   0      0 111.6k      0                              0100    415 100    415   0      0 106.7k      0                              0
+HTTP/1.1 200 OK
+date: Sat, 14 Nov 2026 18:02:29 GMT
+server: uvicorn
+content-length: 415
+content-type: text/html; charset=utf-8
+
+
+    <html>
+        <head><title>Internal Wiki</title></head>
+        <body style="font-family: Arial, sans-serif; margin: 40px;">
+            <h1>Internal Organizational Wiki</h1>
+            <p>Welcome to the internal documentation portal (HTTP Baseline).</p>
+            <hr>
+            <p><em>Security Notice: This page is currently served over plain unencrypted HTTP.</em></p>
+        </body>
+    </html>
+    Exit code: 0
