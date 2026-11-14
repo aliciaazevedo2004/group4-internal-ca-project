@@ -17,8 +17,8 @@ HOST = "127.0.0.1"
 PORT = 9443
 
 BASE_DIR = Path(__file__).resolve().parent
-CERT_FILE = BASE_DIR / "certs" / "fake-wiki.crt"
-KEY_FILE = BASE_DIR / "certs" / "fake-wiki.key"
+CERT_FILE = BASE_DIR / "certs" / "t4-self-signed-rejection-ca" / "fake-wiki.crt"
+KEY_FILE = BASE_DIR / "certs" / "t4-self-signed-rejection-ca" / "fake-wiki.key"
 
 
 class FakeHTTPSWikiHandler(BaseHTTPRequestHandler):
