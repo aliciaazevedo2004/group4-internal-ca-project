@@ -10,5 +10,5 @@ def get_health():
         "status": "healthy",
         "service": "internal-api",
         "version": "1.0",
-        "mode": os.getenv("SERVICE_MODE", "http").upper(),,
+        "mode": os.getenv("SERVICE_MODE", "http").upper(),
     }
