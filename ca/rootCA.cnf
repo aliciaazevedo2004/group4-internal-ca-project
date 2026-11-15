@@ -1,0 +1,16 @@
+[req]
+distinguished_name=req_distinguished_name
+x509_extensions=v3_ca
+prompt=yes
+[req_distinguished_name]
+countryName=Country Name(2 letter code)
+stateOrProvinceName=State or Province Name
+localityName=Locality Name
+0.organizationName=Organization Name
+organizationalUnitName=Organizational Unit Name
+commonName=Common Name
+[v3_ca]
+subjectKeyIdentifier=hash
+authorityKeyIdentifier=keyid:always
+basicConstraints=critical, CA:TRUE
+keyUsage=critical, keyCertSign, cRLSign
