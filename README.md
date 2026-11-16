@@ -3,42 +3,31 @@
 **Course:** ITIS 3200  
 **Project:** Internal Certificate Authority Setup for a Small Network
 
-## 1. Project Overview
+## Project Overview
 
-This project demonstrates how an internal Certificate Authority (CA) can secure communication between clients and internal network services using HTTPS.
+This project demonstrates how an internal Certificate Authority (CA) secures an internal wiki and API using HTTPS.
 
-Our network includes:
+The project includes a Root CA, service certificates, two internal services, and three security tests.
 
-- **Root CA:** Issues and verifies trusted certificates.
-- **Internal Wiki:** Web service secured using HTTPS.
-- **Internal API:** API service secured using HTTPS.
-- **Security Testing:** Demonstrates trusted and untrusted connections.
-
-The goal is to demonstrate how certificate verification protects against server impersonation.
-
-## 2. Project Structure
+## Project Structure
 
 ```text
 group4-internal-ca-project/
-├── ca/              # Root CA and service certificates
-├── services/        # Internal wiki and API
-├── tests/           # Security testing scripts
-├── docs/            # Test plans, results, and evidence
-├── report/          # Final report
-├── presentation/    # Presentation slides
+├── ca/          # Root CA and certificates
+├── services/    # Internal wiki and API
+├── tests/       # Security tests, certs, and evidence
+├── report/      # Report and integration checklist
 └── README.md
 ```
 
-Private keys are stored locally and are not uploaded to GitHub.
+Private keys are stored locally and excluded from GitHub.
 
-## 3. Requirements
+## Requirements
 
 - Python 3.9+
 - OpenSSL
 - curl
-- FastAPI
-- Uvicorn
-- Ubuntu, WSL, or Linux
+- FastAPI and Uvicorn
 
 Install dependencies:
 
@@ -46,119 +35,64 @@ Install dependencies:
 python3 -m pip install fastapi uvicorn
 ```
 
-All commands below are run from the project root.
+Run all commands from the project root.
 
-## 4. Running the Services
+## Services
 
-The project uses the following ports:
-
-| Service | Port | Protocol |
+| Service | HTTP | HTTPS |
 |---|---|---|
-| Internal Wiki | 8080 | HTTP |
-| Internal Wiki | 8443 | HTTPS |
-| Internal API | 8082 | HTTP |
-| Internal API | 8444 | HTTPS |
-| Fake HTTP Wiki | 8081 | HTTP |
-| Fake HTTPS Wiki | 9443 | HTTPS |
+| Internal Wiki | 8080 | 8443 |
+| Internal API | 8082 | 8444 |
+| Fake HTTP Wiki | 8081 | — |
+| Fake HTTPS Wiki | — | 9443 |
 
-### Start the Legitimate Wiki
+Start the legitimate HTTPS services in separate terminals:
 
 ```bash
 python3 -m services.main wiki --mode https
-```
-
-### Start the Internal API
-
-```bash
 python3 -m services.main api --mode https
 ```
 
-Both HTTPS services require their matching certificate and private key files to be available locally.
+Both services require their matching private keys locally.
 
-## 5. Certificate Verification
+## Certificate Verification
 
-The Root CA public certificate is stored at:
-
-`ca/rootCA.crt`
-
-Verify the service certificates:
+Verify the wiki and API certificates:
 
 ```bash
 openssl verify -CAfile ca/rootCA.crt ca/wiki/wiki.crt
 openssl verify -CAfile ca/rootCA.crt ca/api/api.crt
 ```
 
-Expected result: Both certificates verify successfully.
+**Expected:** Both certificates verify successfully.
 
-## 6. Security Testing
+## Security Testing
 
-Three security tests demonstrate the project's main security concepts.
+| Test | Purpose | Expected Result |
+|---|---|---|
+| Test 1 — Fake HTTP Wiki | Demonstrate lack of server authentication | HTTP 200 OK |
+| Test 2 — Legitimate HTTPS Wiki | Verify trusted certificate | Connection succeeds |
+| Test 3 — Fake HTTPS Wiki | Reject untrusted certificate | Curl error 60 |
 
-### Test 1 — Fake HTTP Wiki
-
-Demonstrates that HTTP does not provide certificate-based server authentication.
-
-Start the fake server:
+Start these servers in separate terminals:
 
 ```bash
 python3 tests/fake_http_wiki.py
-```
-
-Test the connection:
-
-```bash
-curl -i http://127.0.0.1:8081/
-```
-
-**Expected Result:** HTTP connection succeeds without certificate verification.
-
-### Test 2 — Legitimate HTTPS Wiki
-
-Demonstrates that a legitimate HTTPS server is accepted when its certificate is trusted.
-
-Start the legitimate HTTPS wiki:
-
-```bash
 python3 -m services.main wiki --mode https
-```
-
-Test the connection:
-
-```bash
-curl --noproxy '*' \
-  --resolve wiki.internal.local:8443:127.0.0.1 \
-  --cacert ca/rootCA.crt \
-  https://wiki.internal.local:8443/
-```
-
-**Expected Result:** HTTPS connection succeeds with certificate and hostname verification.
-
-### Test 3 — Fake HTTPS Wiki
-
-Demonstrates that a fake HTTPS server with an untrusted certificate is rejected.
-
-Start the fake server:
-
-```bash
 python3 tests/fake_https_wiki.py
 ```
 
-Test the connection:
+Run the automated tests:
 
 ```bash
-curl --noproxy '*' \
-  --resolve wiki.internal.local:9443:127.0.0.1 \
-  --cacert ca/rootCA.crt \
-  https://wiki.internal.local:9443/
+bash tests/security_tests.sh
 ```
 
-**Expected Result:** Certificate verification fails, typically with curl error `60`.
+The script displays PASS/FAIL results and saves logs in `tests/evidence/` once its log path is updated.
 
-The fake HTTPS server requires its matching private key, which is stored locally rather than in GitHub.
+## Internal API Verification
 
-## 7. Internal API Verification
-
-Verify that the internal API works over HTTPS:
+Verify the API over HTTPS:
 
 ```bash
 curl --noproxy '*' \
@@ -167,29 +101,23 @@ curl --noproxy '*' \
   https://api.internal.local:8444/health
 ```
 
-**Expected Result:** The API returns a successful health response over a verified HTTPS connection.
+**Expected:** Successful HTTPS connection and JSON health response.
 
-## 8. Documentation
+## Documentation
 
-| Location | Description |
-|---|---|
-| `tests/security-testing-plan.md` | Three security tests and expected outcomes |
-| `tests/test-results.md` | Testing results and observations |
-| `tests/evidence/` | Terminal output |
-| `report/` | Project report |
+- `services/README.md` — Service setup
+- `tests/security-testing-plan.md` — Testing plan
+- `tests/test-results.md` — Test results
+- `tests/evidence/` — Testing evidence
+- `report/integration-checklist.md` — Project progress
 
-## 9. Security Considerations
+## Security Notes
 
-- Private keys are excluded from GitHub.
-- The Root CA is used to verify legitimate service certificates.
+- Private keys are not committed to GitHub.
+- Certificates use the internal Root CA.
 - Certificate and hostname verification remain enabled.
-- Fake services are used only in a controlled testing environment.
-- The tests demonstrate server authentication, not mutual TLS (mTLS) client authentication.
+- Fake servers are used only for authorized local testing.
 
-## 10. Conclusion
+## Conclusion
 
-This project demonstrates how an internal Certificate Authority provides trusted identities for internal services.
-
-The three security tests show that HTTP lacks certificate-based authentication, legitimate HTTPS connections can be verified, and fake HTTPS certificates are rejected.
-
-Together, these demonstrations highlight the importance of HTTPS and certificate verification in securing internal network communication.
+This project demonstrates how HTTPS and an internal Certificate Authority protect internal services from server impersonation through certificate verification.
