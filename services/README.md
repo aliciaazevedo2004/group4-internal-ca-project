@@ -1,128 +1,144 @@
 # Internal Services (Wiki and API)
 
-Two small FastAPI services used for the HTTP baseline and the HTTPS demo.
-They run as separate processes on separate ports so they can be tested
-independently.
+This project uses two FastAPI services: an internal wiki and an internal API. Both support HTTP and HTTPS to demonstrate secure communication using an internal Certificate Authority (CA).
 
 ## Setup
 
 Requires Python 3.9+.
 
-```
-pip install fastapi uvicorn
-```
+Install dependencies:
 
-Add this line to `/etc/hosts` (WSL/Linux). If you also test from Windows, add
-it to `C:\Windows\System32\drivers\etc\hosts`:
-
-```
-127.0.0.1  wiki.internal.local  api.internal.local
+```bash
+python3 -m pip install fastapi uvicorn
 ```
 
-## Hostnames and ports
+Run all commands from the repository root.
 
-| Service | Hostname | HTTP port | HTTPS port |
+## Hostnames and Ports
+
+| Service | Hostname | HTTP | HTTPS |
 |---|---|---|---|
-| Wiki | wiki.internal.local | 8080 | 8443 |
-| API | api.internal.local | 8082 | 8444 |
+| Wiki | `wiki.internal.local` | 8080 | 8443 |
+| API | `api.internal.local` | 8082 | 8444 |
 
-Ports used by the security tests (not by these services): 8081 (fake HTTP wiki),
-9443 (fake HTTPS wiki), 9444 (unrelated-CA HTTPS test).
+Security testing uses two additional ports:
 
-## Start and stop
+- **8081:** Fake HTTP wiki
+- **9443:** Fake HTTPS wiki
 
-Run all commands from the **repository root**. Use one terminal per service.
-Stop any service with `Ctrl+C`.
+For local testing, use curl's `--resolve` option or add the following line to your hosts file:
 
-| Service | Mode | Command |
+```text
+127.0.0.1 wiki.internal.local api.internal.local
+```
+
+## Starting the Services
+
+Run each service in a separate terminal.
+
+| Service | Command |
+|---|---|
+| Wiki HTTP | `python3 -m services.main wiki --mode http` |
+| Wiki HTTPS | `python3 -m services.main wiki --mode https` |
+| API HTTP | `python3 -m services.main api --mode http` |
+| API HTTPS | `python3 -m services.main api --mode https` |
+
+Stop a service with `Ctrl+C`.
+
+By default, services run on `127.0.0.1`.
+
+## HTTP Verification
+
+Verify the HTTP wiki:
+
+```bash
+curl http://127.0.0.1:8080/
+```
+
+Verify the HTTP API:
+
+```bash
+curl http://127.0.0.1:8082/health
+```
+
+Both should return successful responses.
+
+HTTP does not provide TLS encryption or certificate-based server authentication.
+
+## HTTPS Configuration
+
+Each service uses a certificate signed by the internal Root CA.
+
+| Service | Certificate | Private Key |
 |---|---|---|
-| Wiki | HTTP | `python -m services.main wiki --mode http` |
-| API | HTTP | `python -m services.main api --mode http` |
-| Wiki | HTTPS | `python -m services.main wiki --mode https` |
-| API | HTTPS | `python -m services.main api --mode https` |
+| Wiki | `ca/wiki/wiki.crt` | `ca/wiki/wiki.key` |
+| API | `ca/api/api.crt` | `ca/api/api.key` |
 
-By default services bind to `127.0.0.1`. To bind to another interface (for
-example a VM address), set `BIND_HOST`:
+The Root CA certificate is located at `ca/rootCA.crt`.
 
-```
-BIND_HOST=0.0.0.0 python -m services.main wiki --mode http
-```
+Private keys are stored locally and excluded from GitHub.
 
-Only expose the services inside the authorized lab environment.
+## HTTPS Verification
 
-## Expected responses
+Start the wiki and API in HTTPS mode.
 
-**Wiki** (`/`): an HTML page titled "Internal Organizational Wiki" with a
-security notice. In HTTP mode it says "HTTP Baseline" and "plain unencrypted
-HTTP". In HTTPS mode it says "HTTPS".
+**Verify the wiki:**
 
-**API** (`/health`): a small JSON response.
-
-```json
-{"status": "healthy", "service": "internal-api", "version": "1.0", "mode": "HTTP"}
+```bash
+curl --noproxy '*' \
+  --resolve wiki.internal.local:8443:127.0.0.1 \
+  --cacert ca/rootCA.crt \
+  https://wiki.internal.local:8443/
 ```
 
-`mode` is `HTTP` or `HTTPS` depending on how the service was started.
+**Verify the API:**
 
-## HTTP baseline
-
+```bash
+curl --noproxy '*' \
+  --resolve api.internal.local:8444:127.0.0.1 \
+  --cacert ca/rootCA.crt \
+  https://api.internal.local:8444/health
 ```
-curl http://wiki.internal.local:8080/
-curl http://api.internal.local:8082/health
-```
 
-HTTP does not provide TLS encryption or cryptographic server identity
-verification. Anyone on the network path can read or modify the traffic, and a
-client has no way to prove it is talking to the real server. This is the
-deliberately vulnerable baseline for the demo.
+Expected result: Both HTTPS connections succeed when the certificate chain and hostname are valid.
 
-## HTTPS
+Do not use `curl -k` or `--insecure`, because these options disable certificate verification.
 
-Each service loads only its own certificate and key, issued by the internal
-Root CA. The certificate for each service must include its hostname in the SAN
-(`wiki.internal.local` or `api.internal.local`).
+## Security Demonstration
 
-| Service | Certificate | Private key |
+The project uses three security tests:
+
+| Test | Description | Expected Result |
 |---|---|---|
-| Wiki | `certificates/wiki.crt` | `certificates/wiki.key` |
-| API | `certificates/api.crt` | `certificates/api.key` |
+| Test 1 | Fake HTTP Wiki | Connection accepted without certificate verification |
+| Test 2 | Legitimate HTTPS Wiki | Trusted certificate accepted |
+| Test 3 | Fake HTTPS Wiki | Untrusted certificate rejected |
 
-To use a different directory, set `CERT_DIR`:
+The internal API is verified separately over HTTPS.
 
-```
-CERT_DIR=/path/to/certs python -m services.main wiki --mode https
-```
+### Run Automated Tests
 
-**Private keys are never committed.** `.gitignore` blocks `*.key` and `*.pem`.
-Get keys from Member 1 privately or generate them locally.
+Start the legitimate HTTPS wiki, fake HTTP wiki, and fake HTTPS wiki in separate terminals.
 
-### Verify HTTPS
+Then run:
 
-Use the Root CA for trust. Do not use `curl -k` or `--insecure`.
-
-```
-curl --cacert rootCA.crt https://wiki.internal.local:8443/
-curl --cacert rootCA.crt https://api.internal.local:8444/health
-
-openssl s_client -connect wiki.internal.local:8443 \
-  -servername wiki.internal.local -CAfile rootCA.crt \
-  -verify_hostname wiki.internal.local -verify_return_error
+```bash
+bash tests/security_tests.sh
 ```
 
-Repeat the `openssl` check for the API with `api.internal.local:8444`. These
-succeed only when the Root CA is trusted, the server presents the correct
-certificate, and the hostname matches the SAN.
+The script displays PASS/FAIL results and saves a log in `docs/evidence/`.
 
-## Attack demo (for Member 3)
+## Security Notes
 
-Start both legitimate services in HTTPS mode, one per terminal:
+- The Root CA signs the legitimate service certificates.
+- Each certificate identifies its service hostname through a Subject Alternative Name (SAN).
+- HTTPS provides encryption and server authentication.
+- Untrusted certificates are rejected when verification is enabled.
+- Private keys must never be committed to GitHub.
+- Testing is performed in an authorized local environment.
 
-```
-python -m services.main wiki --mode https
-python -m services.main api --mode https
-```
+## Conclusion
 
-The legitimate wiki (8443) should succeed with `--cacert rootCA.crt`, while the
-fake HTTPS wiki (9443) and the unrelated-CA test (9444) should fail
-verification. For the HTTP baseline part of the demo, start the services with
-`--mode http` instead.
+The wiki and API demonstrate how internal services can use HTTPS with certificates issued by a trusted internal CA.
+
+The three security tests demonstrate the difference between unsecured HTTP, trusted HTTPS, and untrusted HTTPS connections.
