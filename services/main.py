@@ -11,12 +11,22 @@ HOST = os.getenv("BIND_HOST", "127.0.0.1")
 CERT_DIR = os.getenv("CERT_DIR", "certificates") 
 
 SERVICES = {
-    "wiki": {"router": wiki.router, "title": "Internal Wiki",
-             "http_port": 8080, "https_port": 8443,
-             "cert": "wiki.crt", "key": "wiki.key"},
-    "api": {"router": api.router, "title": "Internal API",
-            "http_port": 8082, "https_port": 8444,
-            "cert": "api.crt", "key": "api.key"},
+    "wiki": {
+        "router": wiki.router,
+        "title": "Internal Wiki",
+        "http_port": 8080,
+        "https_port": 8443,
+        "cert": "ca/wiki/wiki.crt",
+        "key": "ca/wiki/wiki.key",
+    },
+    "api": {
+        "router": api.router,
+        "title": "Internal API",
+        "http_port": 8082,
+        "https_port": 8444,
+        "cert": "ca/api/api.crt",
+        "key": "ca/api/api.key",
+    },
 }
 
 
