@@ -13,8 +13,8 @@ CA="ca/rootCA.crt"
 PASSED=0
 FAILED=0
 
-mkdir -p docs/evidence
-LOG="docs/evidence/security-demo-$(date +%Y%m%d-%H%M%S).log"
+mkdir -p tests/evidence
+LOG="tests/evidence/security-demo-$(date +%Y%m%d-%H%M%S).log"
 
 exec > >(tee "$LOG") 2>&1
 
