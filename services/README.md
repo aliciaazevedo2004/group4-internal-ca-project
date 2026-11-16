@@ -126,7 +126,7 @@ Then run:
 bash tests/security_tests.sh
 ```
 
-The script displays PASS/FAIL results and saves a log in `docs/evidence/`.
+The script displays PASS/FAIL results and saves a log in `tests/evidence/`.
 
 ## Security Notes
 
