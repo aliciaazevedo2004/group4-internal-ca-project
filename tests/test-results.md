@@ -13,7 +13,7 @@
 
 **Status:** PASS
 
-**Evidence:** `docs/evidence/t2-fake-http.png`
+**Evidence:** `tests/evidence/t1-fake-http.txt`
 
 ## Test 2 — Legitimate HTTPS Wiki
 
@@ -37,7 +37,7 @@
 
 **Status:** PRELIMINARY PASS
 
-**Evidence:** `tests/evidence/t4-self-signed-rejection.png`
+**Evidence:** `tests/evidence/t3-self-signed-rejection.txt`
 
 ## Test Summary
 
