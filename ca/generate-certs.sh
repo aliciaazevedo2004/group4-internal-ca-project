@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 set -euo pipefail
+export MSYS2_ARG_CONV_EXCL="/CN="
 
 # Recreate all certificates and matching private keys for the local ITIS 3200 lab.
 # Run from any directory: bash ca/generate-certs.sh
@@ -32,7 +33,7 @@ fi
 
 # Build everything in a temporary directory first, so OpenSSL errors do not
 # leave a partially regenerated certificate set in the project.
-tmp="$(mktemp -d)"
+tmp="$(mktemp -d "$ROOT_DIR/.cert-build.XXXXXX")"
 trap 'rm -rf "$tmp"' EXIT
 umask 077
 mkdir -p "$tmp/wiki" "$tmp/api" "$tmp/fake"
