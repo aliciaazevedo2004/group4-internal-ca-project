@@ -13,7 +13,7 @@ The project includes a Root CA, service certificates, two internal services, and
 
 ```text
 group4-internal-ca-project/
-├── ca/          # Root CA and certificates
+├── ca/          # Root CA, certificates, and generation script
 ├── services/    # Internal wiki and API
 ├── tests/       # Security tests, certs, and evidence
 ├── report/      # Report and integration checklist
@@ -36,6 +36,24 @@ python3 -m pip install fastapi uvicorn
 ```
 
 Run all commands from the project root.
+
+## Certificate Setup
+
+Private keys are not included in the GitHub repository. To reproduce the environment, generate new certificates and matching private keys.
+
+Run:
+
+```bash
+bash ca/generate-certs.sh
+```
+
+Type `REPLACE` when prompted.
+
+The script replaces the existing certificates locally and generates matching private keys using the same filenames and paths.
+
+No Python file changes are required.
+
+For detailed instructions, see [ca/README.md](ca/README.md).
 
 ## Services
 
@@ -88,7 +106,7 @@ Run the automated tests:
 bash tests/security_tests.sh
 ```
 
-The script displays PASS/FAIL results and saves logs in `tests/evidence/` once its log path is updated.
+The script displays PASS/FAIL results. Test evidence is stored in `tests/evidence/`. Ensure the script uses this directory for its logs.
 
 ## Internal API Verification
 
@@ -105,6 +123,7 @@ curl --noproxy '*' \
 
 ## Documentation
 
+- `ca/README.md` — Certificate generation and reproduction instructions
 - `services/README.md` — Service setup
 - `tests/security-testing-plan.md` — Testing plan
 - `tests/test-results.md` — Test results
@@ -117,6 +136,7 @@ curl --noproxy '*' \
 - Certificates use the internal Root CA.
 - Certificate and hostname verification remain enabled.
 - Fake servers are used only for authorized local testing.
+- The certificate generation script recreates matching certificates and keys locally.
 
 ## Conclusion
 
