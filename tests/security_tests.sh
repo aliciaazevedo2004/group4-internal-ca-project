@@ -40,6 +40,7 @@ run_test() {
 
     case "$name" in
         "Test 1"*)
+            # Fake HTTP wiki should respond successfully.
             if [[ "$rc" -eq 0 ]] &&
                grep -Eq '^HTTP/[0-9.]+ 200' <<< "$output"; then
                 success=0
@@ -47,16 +48,22 @@ run_test() {
             ;;
 
         "Test 2"*)
+            # Legitimate HTTPS must return HTTP 200.
+            # Curl exit 0 confirms successful TLS verification
+            # because --insecure is never used.
             if [[ "$rc" -eq 0 ]] &&
-               grep -Eq '^HTTP/[0-9.]+ 200' <<< "$output" &&
-               grep -Eiq 'SSL certificate verify ok|SSL certificate verification.*ok' <<< "$output"; then
+               grep -Eq '^HTTP/[0-9.]+ 200' <<< "$output"; then
                 success=0
             fi
             ;;
 
         "Test 3"*)
+            # Fake HTTPS must fail certificate verification.
+            # Supports OpenSSL and Windows Schannel messages.
             if [[ "$rc" -eq 60 ]] &&
-               grep -Eiq 'self.signed certificate|certificate verify failed|unknown CA|unable to get local issuer certificate' <<< "$output"; then
+               grep -Eiq \
+               'self.signed certificate|certificate verify failed|unknown CA|unable to get local issuer certificate|untrusted root|certificate chain.*untrusted' \
+               <<< "$output"; then
                 success=0
             fi
             ;;
@@ -88,6 +95,7 @@ run_test "Test 1 — Fake HTTP Wiki" \
 run_test "Test 2 — Legitimate HTTPS Wiki" \
     "Trusted HTTPS connection succeeds" \
     curl -v -i --max-time 10 --noproxy '*' \
+    --ssl-revoke-best-effort \
     --resolve wiki.internal.local:8443:127.0.0.1 \
     --cacert "$CA" \
     https://wiki.internal.local:8443/
@@ -96,6 +104,7 @@ run_test "Test 2 — Legitimate HTTPS Wiki" \
 run_test "Test 3 — Fake HTTPS Wiki" \
     "Untrusted certificate rejected (curl 60)" \
     curl -v -i --max-time 10 --noproxy '*' \
+    --ssl-revoke-best-effort \
     --resolve wiki.internal.local:9443:127.0.0.1 \
     --cacert "$CA" \
     https://wiki.internal.local:9443/

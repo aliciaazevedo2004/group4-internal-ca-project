@@ -1,0 +1,62 @@
+GROUP 4 — INTERNAL CA SECURITY TESTING
+
+========================================
+Test 1 — Fake HTTP Wiki
+Expected: HTTP 200 OK
+========================================
+*   Trying 127.0.0.1:8081...
+* connect to 127.0.0.1 port 8081 from 0.0.0.0 port 63353 failed: Connection refused
+* Failed to connect to 127.0.0.1:8081 after 2021 ms: Could not connect to server
+* closing connection #0
+curl: (7) Failed to connect to 127.0.0.1:8081 after 2021 ms: Could not connect to server
+Curl exit code: 7
+[FAIL] Test 1 — Fake HTTP Wiki
+
+========================================
+Test 2 — Legitimate HTTPS Wiki
+Expected: Trusted HTTPS connection succeeds
+========================================
+* Added wiki.internal.local:8443:127.0.0.1 to DNS cache
+* Hostname wiki.internal.local was found in DNS cache
+* Host wiki.internal.local:8443 was resolved.
+* IPv6: (none)
+* IPv4: 127.0.0.1
+*   Trying 127.0.0.1:8443...
+* schannel: disabled automatic use of client certificate
+* ALPN: curl offers http/1.1
+* schannel: added 1 certificate(s) from CA file 'ca/rootCA.crt'
+* schannel: the revocation status is unknown
+* closing connection #0
+curl: (60) schannel: the revocation status is unknown
+More details here: https://curl.se/docs/sslcerts.html
+
+curl failed to verify the legitimacy of the server and therefore could not
+establish a secure connection to it. To learn more about this situation and
+how to fix it, please visit the webpage mentioned above.
+Curl exit code: 60
+[FAIL] Test 2 — Legitimate HTTPS Wiki
+
+========================================
+Test 3 — Fake HTTPS Wiki
+Expected: Untrusted certificate rejected (curl 60)
+========================================
+* Added wiki.internal.local:9443:127.0.0.1 to DNS cache
+* Hostname wiki.internal.local was found in DNS cache
+* Host wiki.internal.local:9443 was resolved.
+* IPv6: (none)
+* IPv4: 127.0.0.1
+*   Trying 127.0.0.1:9443...
+* connect to 127.0.0.1 port 9443 from 0.0.0.0 port 63374 failed: Connection refused
+* Failed to connect to wiki.internal.local:9443 after 2025 ms: Could not connect to server
+* closing connection #0
+curl: (7) Failed to connect to wiki.internal.local:9443 after 2025 ms: Could not connect to server
+Curl exit code: 7
+[FAIL] Test 3 — Fake HTTPS Wiki
+
+========================================
+FINAL TEST SUMMARY
+========================================
+Passed: 0 / 3
+Failed: 3 / 3
+Evidence log: tests/evidence/security-demo-20261121-162056.log
+ONE OR MORE TESTS FAILED
