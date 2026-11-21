@@ -15,7 +15,7 @@ Actual Result: All four service instances started (wiki on 8080 and 8443, API on
 
 Status: PASS
 
-Evidence: docs/evidence/member2/3200_FinalProjectM2_HTTPBaseline.png
+Evidence: services/evidence/3200_FinalProjectM2_HTTPBaseline.png
 
 Test 2 — Certificate Generation and Chain Verification
 
@@ -27,7 +27,7 @@ Actual Result: ca/generate-certs.sh completed with "Certificates and keys genera
 
 Status: PASS
 
-Evidence: docs/evidence/member2/3200_FinalProjectM2_KeyGeneration.png
+Evidence: services/evidence/3200_FinalProjectM2_KeyGeneration.png
 
 Test 3 — Private Key Matches Certificate
 
@@ -39,7 +39,7 @@ Actual Result: Wiki certificate and wiki key both produced SHA-256 8053093f…. 
 
 Status: PASS
 
-Evidence: docs/evidence/member2/3200_FinalProjectM2_HashMatches.png
+Evidence: services/evidence/3200_FinalProjectM2_HashMatches.png
 
 Test 4 — Certificate Subject, SAN, and Validity
 
@@ -51,7 +51,7 @@ Actual Result: ca/wiki/wiki.crt has subject CN=wiki.internal.local and SAN DNS:w
 
 Status: PASS
 
-Evidence: docs/evidence/member2/3200_FinalProject_Sans_Validity.png
+Evidence: services/evidence/3200_FinalProject_Sans&Validity.png
 
 Test 5 — Wiki TLS Verification (HTTPS, Port 8443)
 
@@ -63,7 +63,7 @@ Actual Result: openssl s_client with -CAfile ca/rootCA.crt -verify_hostname wiki
 
 Status: PASS
 
-Evidence: docs/evidence/member2/3200_FinalProject6.png and docs/evidence/member2/3200_FinalProject6_1.png
+Evidence: services/evidence/3200_FinalProject6.png and services/evidence/3200_FinalProject6_1.png
 
 Test 6 — API TLS Verification (HTTPS, Port 8444)
 
@@ -75,7 +75,7 @@ Actual Result: openssl s_client with -CAfile ca/rootCA.crt -verify_hostname api.
 
 Status: PASS
 
-Evidence: docs/evidence/member2/3200_FinalProject7.png and docs/evidence/member2/3200_FinalProject7_1.png
+Evidence: services/evidence/3200_FinalProject7.png and services/evidence/3200_FinalProject7_1.png
 
 Test 7 — HTTPS Application Responses with Explicit CA Trust
 
@@ -87,7 +87,7 @@ Actual Result: curl --cacert ca/rootCA.crt https://wiki.internal.local:8443/ ret
 
 Status: PASS
 
-Evidence: docs/evidence/member2/3200_FinalProjectM2_HTTPSResponses.png
+Evidence: services/evidence/3200_FinalProject_MissingPiece.png
 
 Test 8 — Client Without the Root CA Rejects the Server
 
@@ -99,7 +99,7 @@ Actual Result: curl https://wiki.internal.local:8443/ failed with curl: (60) SSL
 
 Status: PASS
 
-Evidence: docs/evidence/member2/3200_FinalProject8.png
+Evidence: services/evidence/3200_FinalProject8.png
 
 Summary
 Test	Description	Status
